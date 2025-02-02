@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="6.css">
+    <title>To-Do List</title>
+
+   
+</head>
+<body>
+    <div class="container">
+        <h2>To-Do List</h2>
+        <div class="input-group">
+            <input type="text" id="taskName" placeholder="Task name">
+            <input type="text" id="des" placeholder="Task description">
+            <button onclick="addTask()">Add Task</button>
+        </div>
+        <ul id="taskList"></ul>
+        <div class="bulk-actions">
+            <button onclick="bulkDelete()">Delete Selected</button>
+        </div>
+    </div>
+    <script>
+        const defaultTasks = [
+            { id: Date.now(), name: "Task 1", description: "123123", completed: false },
+            { id: Date.now() + 1, name: "Task 2", description: "qqq", completed: false },
+            { id: Date.now() + 2, name: "Task 3", description: "qqq", completed: false }
+        ];
+
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [...defaultTasks];
+        renderTasks();
+
+        function addTask() {
+            const name = document.getElementById('taskName').value.trim();
+            const description = document.getElementById('des').value.trim();
+            if (!name || !description) {
+                alert("Please enter both task name and description.");
+                return;
+            }
+            const newTask = { id: Date.now(), name, description, completed: false };
+            tasks.push(newTask);
+            saveAndRender();
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task);
+            saveAndRender();
+        }
+
+        function bulkDelete() {
+            const selected = document.querySelectorAll('.task input:checked');
+            if (selected.length === 0) return;
+            if (!confirm('Are you sure you want to delete selected tasks?')) return;
+            const selectedIds = Array.from(selected).map(input => parseInt(input.dataset.id));
+            tasks = tasks.filter(task => !selectedIds.includes(task.id));
+            saveAndRender();
+        }
+
+        function deleteTask(id) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+            tasks = tasks.filter(task => task.id !== id);
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'task' + (task.completed ? ' completed' : '');
+                li.innerHTML = `
+                    <input type="checkbox" data-id="${task.id}" ${task.completed ? 'checked' : ''}>
+                    <span>${task.name} - ${task.description}</span>
+                    <button onclick="deleteTask(${task.id})">❌</button>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        document.getElementById('taskList').addEventListener('click', function(event) {
+            const target = event.target;
+            if (target.tagName === 'INPUT' && target.type === 'checkbox') {
+                toggleTask(parseInt(target.dataset.id));
+            } else if (target.tagName === 'BUTTON') {
+                deleteTask(parseInt(target.parentElement.querySelector('input').dataset.id));
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="6.css">
+    <title>To-Do List</title>
+</head>
+<body>
+    <div class="container">
+        <h2>To-Do List</h2>
+        <div class="input-group">
+            <input type="text" id="taskName" placeholder="Task name">
+            <input type="text" id="des" placeholder="Task description">
+            <button onclick="addTask()">Add Task</button>
+        </div>
+        <ul id="taskList"></ul>
+        <div class="bulk-actions">
+            <button onclick="bulkDelete()">Delete Selected</button>
+        </div>
+    </div>
+    <script>
+        const defaultTasks = [
+            { id: 1, name: "Task 1", description: "123123", completed: false },
+            { id: 2, name: "Task 2", description: "qqq", completed: false },
+            { id: 3, name: "Task 3", description: "qqq", completed: false }
+        ];
+
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        const deletedTaskIds = JSON.parse(localStorage.getItem('deletedTaskIds')) || [];
+
+        if (tasks.length === 0) {
+            tasks = defaultTasks.filter(task => !deletedTaskIds.includes(task.id));
+            saveTasks();
+        }
+
+        function addTask() {
+            const name = document.getElementById('taskName').value.trim();
+            const description = document.getElementById('des').value.trim();
+            if (!name || !description) {
+                alert("Please enter both task name and description.");
+                return;
+            }
+            const newTask = { id: Date.now(), name, description, completed: false };
+            tasks.push(newTask);
+            saveTasks();
+            renderTasks();
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task);
+            saveTasks();
+            renderTasks();
+        }
+
+        function bulkDelete() {
+            const selected = document.querySelectorAll('.task input:checked');
+            if (selected.length === 0) return;
+            if (!confirm('Are you sure you want to delete selected tasks?')) return;
+            const selectedIds = Array.from(selected).map(input => parseInt(input.dataset.id));
+            tasks = tasks.filter(task => !selectedIds.includes(task.id));
+            selectedIds.forEach(id => {
+                if (!deletedTaskIds.includes(id)) {
+                    deletedTaskIds.push(id);
+                }
+            });
+            saveTasks();
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+            tasks = tasks.filter(task => task.id !== id);
+            if (!deletedTaskIds.includes(id)) {
+                deletedTaskIds.push(id);
+            }
+            saveTasks();
+            renderTasks();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            localStorage.setItem('deletedTaskIds', JSON.stringify(deletedTaskIds));
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'task' + (task.completed ? ' completed' : '');
+                li.innerHTML = `
+                    <input type="checkbox" data-id="${task.id}" ${task.completed ? 'checked' : ''}>
+                    <span>${task.name} - ${task.description}</span>
+                    <button onclick="deleteTask(${task.id})">❌</button>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        document.getElementById('taskList').addEventListener('click', function(event) {
+            const target = event.target;
+            if (target.tagName === 'INPUT' && target.type === 'checkbox') {
+                toggleTask(parseInt(target.dataset.id));
+            } else if (target.tagName === 'BUTTON') {
+                deleteTask(parseInt(target.parentElement.querySelector('input').dataset.id));
+            }
+        });
+
+        renderTasks();
+    </script>
+</body>
+</html> -->
+
