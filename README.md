@@ -67,3 +67,46 @@ function bulkDelete() {
         console.log("ผู้ใช้ยกเลิกการลบ");
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+function render() {
+  // ดึง element ที่มี id "taskList" มาเก็บไว้ในตัวแปร taskList
+  const taskList = document.getElementById("taskList");
+  
+  // เคลียร์เนื้อหาที่แสดงอยู่ใน taskList ก่อน (ลบ task ทั้งหมดที่แสดงอยู่)
+  taskList.innerHTML = "";
+  
+  // วนลูปผ่านทุก task ในอาร์เรย์ tasks
+  tasks.forEach((task) => {
+    // สร้าง element <li> สำหรับ task แต่ละตัว
+    const li = document.createElement("li");
+
+    // กำหนด class ให้กับ <li> เป็น "task"
+    // ถ้า task นั้นเสร็จ (completed === true) จะต่อคำว่า " completed" เข้าไปด้วย
+    li.className = "task" + (task.completed ? " completed" : "");
+
+    /* สร้าง HTML ภายใน <li> โดยประกอบไปด้วย:
+       - Checkbox ที่เก็บ task.id ไว้ใน data-id และติ๊กอยู่ถ้า task.completed เป็น true
+       - <span> แสดงชื่อและคำอธิบายของ task
+       - ปุ่มลบ (❌) เมื่อคลิกจะเรียกฟังก์ชัน deleteTask() พร้อมส่ง task.id ไป */
+    li.innerHTML = `<input type="checkbox" data-id="${task.id}" ${task.completed ? "checked" : ""}>
+                    <span>${task.taskname} - ${task.description}</span>
+                    <button onclick="deleteTask(${task.id})">❌</button>`;
+
+    // เพิ่ม element <li> ที่สร้างขึ้นเข้าไปใน taskList
+    taskList.appendChild(li);
+  });
+  
+  // แสดงข้อมูล tasks ทั้งหมดใน console เพื่อใช้ตรวจสอบหรือดีบัก
+  console.log("Tasks:", tasks);
+}
