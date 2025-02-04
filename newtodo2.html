@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="newtodo.css" />
+    <title>To-Do List</title>
+  </head>
+  <body>
+    <div class="container">
+      <h2>To-Do List</h2>
+      <div class="input-group">
+        <input type="text" id="fieldName" placeholder="Task name" />
+        <input
+          type="text"
+          id="fielddescription"
+          placeholder="Task description"
+        />
+        <button onclick="addTask()">Add Task</button>
+      </div>
+      <ul id="taskList"></ul>
+      <div class="bulk-actions">
+        <button onclick="bulkDelete()">bulkDelete</button>
+      </div>
+    </div>
+
+    <script>
+      const defaultData = [
+        { id: 1, taskname: "task1", description: "test1", completed: false },
+        { id: 2, taskname: "task2", description: "test2", completed: false },
+        { id: 3, taskname: "task3", description: "test3", completed: false },
+      ];
+
+      const storedTasks = localStorage.getItem("tasks");
+
+      let tasks;
+      if (storedTasks) {
+        console.log("if");
+        tasks = JSON.parse(storedTasks);
+      } else {
+        console.log("else");
+        tasks = [...defaultData];
+        localStorage.setItem("tasks", JSON.stringify(tasks)); // บันทึกค่าdefaultData ลงlocalStorage
+      }
+
+      function addTask() {
+        const name = document.getElementById("fieldName").value.trim();
+        const des = document.getElementById("fielddescription").value.trim();
+
+        if (!name || !des) {
+          alert("Please enter both task name and description.");
+          return;
+        }
+
+        const newTask = {
+          id: tasks.length > 0 ? tasks[tasks.length - 1].id + 1 : 1, // ให้ ID ต่อเนื่องจากอันล่าสุด
+          taskname: name,
+          description: des,
+          completed: false,
+        };
+
+        tasks.push(newTask);
+        localStorage.setItem("tasks", JSON.stringify(tasks)); // บันทึกลง localStorage
+        saveAndRender();
+      }
+
+
+      console.log("tasks.length",tasks.length)
+      function deleteTask(id) {
+    if (confirm("แน่ใจไหมที่จะลบ task นี้")) {
+        //ถ้ากด ok ให้ทำการลบ task
+        let newTasks = []; // สร้างอาร์เรใหม่เพื่อเก็บ task ที่ไม่ถูกลบ
+        
+        for (let j = 0; j < tasks.length; j++) {
+            //ตรวจสอบ task ที่ index j ว่ามี id ไม่ตรงกับ id ที่ต้องการลบไหม
+            console.log("id",id)
+            if (tasks[j].id !== id) {
+                console.log("task j", tasks[j].id );
+                newTasks.push(tasks[j]);// เพิ่มเฉพาะ task ที่ไม่ถูกลบเข้าไปในอาเรใหม่
+            }    
+        }
+        tasks = newTasks; //กำหนดให้ tasks เป็นอาร์เรย์ใหม่ที่ไม่มี task ที่ถูกลบแล้ว
+        saveAndRender(); //บันทึกและแสดงผลใหม่
+    } else {
+        // ถ้ากดcancelไม่ต้องทำอะไร
+        return;
+    }
+}
+
+//ฟังชันtoggle checkbox
+console.log("3",tasks.length)
+      function toggleTask(id) {
+    for (let i = 0; i < tasks.length; i++) {
+        // ตรวจสอบ task ที่ index i ว่ามี id ตรงกับ id ที่ระบุหรือไม่
+        if (tasks[i].id === id) {
+            // ถ้า id ตรงกัน
+            if (tasks[i].completed) {
+                // ถ้า task นั้นมีcompleted เป็น true
+                tasks[i].completed = false; // เปลี่ยนเป็น false
+            } else {
+                // ถ้า task นั้นมีcompleted เป็น false
+                tasks[i].completed = true; // เปลี่ยนเป็น true
+            }
+            saveAndRender(); // บันทึกและแสดงผลใหม่
+            return; // หยุดลูปเมื่อเจอ task ที่ต้องการ
+        } else {
+            // ถ้าidไม่ตรงกันให้ข้ามไปตรวจสอบ task ถัดไป
+            continue;
+        }
+    }
+}
+
+function bulkDelete() {
+    const selectedCheckboxes = document.querySelectorAll('.task input[type="checkbox"]:checked');
+    const idsToDelete = []; 
+}
+
+// function bulkDelete() {
+//     const selectedCheckboxes = document.querySelectorAll('.task input[type="checkbox"]:checked');
+//     const idsToDelete = [];  
+//     selectedCheckboxes.forEach(checkbox => {
+//         const taskId = parseInt(checkbox.dataset.id);
+//         const task = tasks.find(task => task.id === taskId);
+//         if (task && task.completed) {
+//             idsToDelete.push(taskId);
+//         }
+//     });
+
+//     if (idsToDelete.length === 0) {
+//         alert("No completed tasks selected for deletion.");
+//         return;
+//     }
+
+//     if (confirm("Are you sure you want to delete the selected completed tasks?")) {
+//         tasks = tasks.filter(task => !idsToDelete.includes(task.id));
+//         saveAndRender();
+//     }
+// }
+
+      function saveAndRender() {
+        localStorage.setItem("tasks", JSON.stringify(tasks));  //แปลงออปเจค
+        render();
+      }
+
+      function render() {
+        const taskList = document.getElementById("taskList");
+        taskList.innerHTML = "";
+        tasks.forEach((task) => {
+          const li = document.createElement("li");
+          li.className = "task" + (task.completed ? " completed" : ""); //เมื่อกดเพิ่มtask completed
+          li.innerHTML = `<input type="checkbox" data-id="${task.id}" ${
+            task.completed ? "checked" : ""
+          }><span>${task.taskname} - ${task.description}
+            </span><button onclick="deleteTask(${task.id})">❌</button>`;
+          taskList.appendChild(li);
+        });
+        console.log("Tasks:", tasks);
+      }
+
+      document
+        .getElementById("taskList")
+        .addEventListener("click", function (event) {
+          const target = event.target;
+          //target เลือก type input checkbox
+          if (target.tagName === "INPUT" && target.type === "checkbox") {
+            //ส่งค่าidไปให้checkbox
+            toggleTask(parseInt(target.dataset.id));
+
+          }
+        });
+      render();
+    </script>
+  </body>
+</html>

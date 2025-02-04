@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="newtodo.css">
+    <title>To-Do List</title>
+</head>
+<body>
+    <div class="container">
+        <h2>To-Do List</h2>
+        <div class="input-group">
+            <input type="text" id="fieldName" placeholder="Task name">
+            <input type="text" id="fielddescription" placeholder="Task description">
+            <button onclick="addTask()">Add Task</button>
+        </div>
+        <ul id="taskList"></ul>
+        <div class="bulk-actions">
+            <button onclick="bulkDelete()">Delete Selected</button>
+        </div>
+    </div>
+
+<script>
+const defaultData = [
+    { id: 1, taskname: "task1", description: "test1", completed: false },
+    { id: 2, taskname: "task2", description: "test2", completed: false },
+    { id: 3, taskname: "task3", description: "test3", completed: false },
+];
+
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [...defaultData];
+
+function addTask() {
+    const name = document.getElementById("fieldName").value.trim();
+    const des = document.getElementById("fielddescription").value.trim();
+    if (!name || !des) {
+        alert("Please enter both task name and description.");
+        return;
+    }
+    const newTask = {
+        id: tasks.length+1, 
+        taskname: name,
+        description: des,
+        completed: false,
+    };
+    
+    tasks.push(newTask);
+    saveAndRender();
+}
+
+function deleteTask(id) {
+    if (!confirm('Are you sure you want to delete this task?')) return;
+    tasks = tasks.filter(task => task.id !== id);
+    saveAndRender();
+}
+
+function toggleTask(id) {
+    const task = tasks.find(task => task.id === id);
+    if (task) {
+        task.completed = !task.completed;
+        saveAndRender();
+    }
+}
+
+function saveAndRender() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    render();
+}
+
+function render() {
+    const taskList = document.getElementById("taskList");
+    taskList.innerHTML = '';
+    tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.className = 'task' + (task.completed ? ' completed' : '');
+        li.innerHTML = `<input type="checkbox" data-id="${task.id}" ${task.completed ? 'checked' : ''}><span>${task.taskname} - ${task.description}</span><button onclick="deleteTask(${task.id})">❌</button>`;
+        taskList.appendChild(li);
+    });
+    console.log('Tasks:', tasks);
+}
+
+document.getElementById('taskList').addEventListener('click', function(event) {
+    const target = event.target;
+    if (target.tagName === 'INPUT' && target.type === 'checkbox') {
+        toggleTask(parseInt(target.dataset.id));
+    }
+});
+
+// Initial render
+render();
+</script>
+
+</body>
+</html>

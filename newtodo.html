@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="newtodo.css">
+    <title>To-Do List</title>
+</head>
+<body>
+    <div class="container">
+        <h2>To-Do List</h2>
+        <div class="input-group">
+            <input type="text" id="fieldName" placeholder="Task name">
+            <input type="text" id="fielddescription" placeholder="Task description">
+            <button onclick="addTask()">Add Task</button>
+        </div>
+        <ul id="taskList"></ul>
+        <div class="bulk-actions">
+            <button onclick="bulkDelete()">Delete Selected</button>
+        </div>
+    </div>
+
+<script>
+    const defautData = [
+        {id:1   ,taskname:"task1"   ,description:"test1", completed:false},
+        {id:2   ,taskname:"task2"   ,description:"test2", completed:false},
+        {id:3  ,taskname:"task3"   ,description:"test3", completed:true},
+    ];
+
+    console.log('a',tasks)
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [...defautData];
+    render();
+
+    function addTask () {
+        const name = document.getElementById("fieldName").value.trim();
+        const des = document.getElementById("fielddescription").value.trim();
+            if (!name || !des) {
+                alert("Please enter both task name and description.");
+                return;
+            }
+        const newTask = {
+            id: ++defautData.length, 
+            taskname: name, 
+            description: des, 
+            completed:false,
+        };
+        tasks.push(newTask);
+        saveAndRender();
+    };
+    
+    function saveAndRender() {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        render();
+    }
+
+    function render() {
+        console.log('Tasks:', tasks);
+    }
+</script>
+
+</body>
+</html>
